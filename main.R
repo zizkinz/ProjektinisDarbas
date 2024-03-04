@@ -10,7 +10,7 @@ head(df)
 #
 bamFile
 seqlevels(bamFile)
-dd
+
 genome(bamFile)
 
 BamViews(bamFile)

@@ -8,7 +8,7 @@ covmx<-cov.matrix(trm, coordfile= "test_data/Genes.bed", bin_width=1, no_windows
 draw.profile(covmx,ylab="avg coverage",outfile="DP23_sequence_Coverage.png")
 # draw.heatmap(covmx,outfile="DP23_sequence_Glu_heatmap.png")
 
-plot(1:nrow(covmx),cumsum(covmx[,3]/sum(covmx[,3])), type = "l")
+plot(1:nrow(covmx),cumsum(covmx[,2]/sum(covmx[,2])), type = "l")
 lines(1:nrow(covmx), punif(1:nrow(covmx),0,100), type = "l")
 
 hyp_dist <- function(x){
@@ -39,6 +39,8 @@ ks <- function(hyp_dist, covmx){
   return(ks_d)
 }
 
+
+# Reikia atiminet mediana per visus meginius
 ks_norm <- ks(hyp_dist, covmx) - median(ks(hyp_dist, covmx))
 
 mrin <- -mean(ks_norm)

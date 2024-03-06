@@ -1,19 +1,10 @@
 library(CoverageView)
-trm<-CoverageBamFile("test_data/DP23_sequence.bam")
-# trm<-CoverageBamFile("test_data/DP24_sequence.bam")
-
-n_wind <- 100
-covmx<-cov.matrix(trm, coordfile= "test_data/Genes.bed", bin_width=1, no_windows = n_wind)
-# write.profile(DP23_Glul_covmx,outfile="DP23_sequence_Glu.txt")
-draw.profile(covmx,ylab="avg coverage",outfile="DP23_sequence_Coverage.png")
-# draw.heatmap(covmx,outfile="DP23_sequence_Glu_heatmap.png")
-
-plot(1:nrow(covmx),cumsum(covmx[,2]/sum(covmx[,2])), type = "l")
-lines(1:nrow(covmx), punif(1:nrow(covmx),0,100), type = "l")
+library(MASS)
 
 hyp_dist <- function(x){
   return(punif(x,0,n_wind))
 }
+
 ks <- function(hyp_dist, covmx){
   ks_d <- numeric(ncol(covmx))
   for (p in 1:ncol(covmx)){
@@ -39,18 +30,44 @@ ks <- function(hyp_dist, covmx){
   return(ks_d)
 }
 
+fn <- function (x) {
+  return (-mean(x))
+}
 
-# Reikia atiminet mediana per visus meginius
-ks_norm <- ks(hyp_dist, covmx) - median(ks(hyp_dist, covmx))
+nsamples <- 2
+ngenes <- 8
 
-mrin <- -mean(ks_norm)
+ks_mx <- matrix(ncol = ngenes, nrow = nsamples)
+mrins <- numeric(nsamples)
+
+filelist <- c("test_data/DP23_sequence.bam", "test_data/DP24_sequence.bam")
+
+for (j in 1:nsamples){
+  trm<-CoverageBamFile(filelist[j])
+  # trm<-CoverageBamFile("test_data/DP23_sequence.bam")
+  # trm<-CoverageBamFile("test_data/DP24_sequence.bam")
+
+  n_wind <- 100
+  covmx<-cov.matrix(trm, coordfile= "test_data/Genes.bed", bin_width=1, no_windows = n_wind)
+  # write.profile(DP23_Glul_covmx,outfile="DP23_sequence_Glu.txt")
+  draw.profile(covmx,ylab="avg coverage",outfile=paste(j, ".png", sep = ''))
+  # draw.heatmap(covmx,outfile="DP23_sequence_Glu_heatmap.png")
+
+  # plot(1:nrow(covmx),cumsum(covmx[,2]/sum(covmx[,2])), type = "l")
+  # lines(1:nrow(covmx), punif(1:nrow(covmx),0,100), type = "l")
+
+  ks_mx[j,] <- ks(hyp_dist, covmx)
+}
+
+ks_norm <- ks_mx - median(ks_mx)
+mrin <- apply(ks_norm, MARGIN = 1, FUN = fn)
+
+# fitting mrins
+hist(mrin)
 
 
 
-# # fitting mrins
-# hist(ks_norm)
-#
-# library(MASS)
+
 #
 # l <- fitdistr(ks_norm,densfun = "normal")$sd
 #  #      mean          sd

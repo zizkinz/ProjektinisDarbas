@@ -50,7 +50,6 @@ for (j in 1:nsamples){
 
   # write.profile(DP23_Glul_covmx,outfile="DP23_sequence_Glu.txt")
   # draw.profile(covmx,ylab="avg coverage",outfile=paste(j, ".png", sep = ''))
-  # draw.profile(covmx,ylab="avg coverage",outfile=paste(j, "_Aldh1l1.png", sep = ''))
   # draw.heatmap(covmx,outfile="DP23_sequence_Glu_heatmap.png")
   # barplot((covmx[,5]))
 
@@ -60,8 +59,7 @@ for (j in 1:nsamples){
   ks_mx[j,] <- ks(hyp_dist, covmx)
 }
 
-medians <- apply(ks_mx, MARGIN = 2, FUN = function (x) rep(median(x, na.rm = TRUE),times = length(x)))
-ks_norm <- ks_mx-medians
+ks_norm <- ks_mx - apply(ks_mx, MARGIN = 2, FUN = function (x) rep(median(x, na.rm = TRUE),times = length(x)))
 
 mrin <- apply(ks_norm, MARGIN = 1, FUN = function (x) -mean(na.omit(x)))
 options(scipen=999)
@@ -69,12 +67,9 @@ print(mrin)
 
 # mKS matrix
 par(mar=c(5.1, 4.1, 4.1, 4.1))
-plot(ks_norm,asp = FALSE,cex= 0.8)
-plot(ks_norm,breaks = c(-1,-0.2,-0.05,-0.02,-0.01,0,0.01,0.02,0.05,0.2,1), col=brewer.pal(10,"RdBu"), na.col="white")
+plot(ks_norm,asp = FALSE, breaks = c(-1,-0.2,-0.05,-0.02,-0.01,0,0.01,0.02,0.05,0.2,1), col=brewer.pal(10,"RdBu"), na.col="white")
 
 # fitting mrins
-hist(mrin)
-mean(mrin)
 
 l <- fitdistr(mrin,densfun = "normal")$sd
 l
@@ -82,7 +77,13 @@ l
 #       mean         sd
 # 0.01643934 0.01162437
 
+# histogram
+hist(mrin,breaks = 10)
+mean(mrin)
+lines(seq(from = -0.25, to= 0.1, by = 0.001),dnorm(seq(from = -0.25, to= 0.1, by = 0.001),mean = l[1], sd = l[2]),col="red")
+abline(v=l[1], col = "blue")
 
+# Q-Q grafikas
 qqnorm(mrin)
 qqline(mrin)
 
